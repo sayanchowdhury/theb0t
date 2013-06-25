@@ -35,11 +35,9 @@ class LogBot(irc.IRCClient):
 
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
-        self.logger = MessageLogger(open(self.factory.filename, "a"))
         self.islogging = False
 
     def startlogging(self, user, msg):
-        self.logger.close()
         self.filename = "Logs-%s"%now.strftime("%Y-%m-%d-%H-%M")
         self.logger = MessageLogger(open(self.filename, "a"))
 
@@ -122,9 +120,8 @@ class LogBotFactory(protocol.ClientFactory):
     A new protocol instance will be created each time we connect to the server.
     """
 
-    def __init__(self, channel, filename):
+    def __init__(self, channel):
         self.channel = channel
-        self.filename = filename
 
     def buildProtocol(self, addr):
         p = LogBot()
@@ -145,7 +142,7 @@ if __name__ == '__main__':
     log.startLogging(sys.stdout)
     
     # create factory protocol and application
-    f = LogBotFactory(sys.argv[1], sys.argv[2])
+    f = LogBotFactory(sys.argv[1])
 
     # connect factory to this host and port
     reactor.connectTCP("irc.freenode.net", 6667, f)
