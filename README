@@ -1,1 +1,5 @@
 http://twistedmatrix.com/documents/current/words/examples/ircLogBot.py
+
+To Run:
+
+$ python ekan0ra.py <channel_name>
