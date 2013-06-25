@@ -2,6 +2,7 @@
 from twisted.words.protocols import irc
 from twisted.internet import reactor, protocol
 from twisted.python import log
+from twisted.internet import defer
 
 # system imports
 import time, sys, os
@@ -33,9 +34,14 @@ class LogBot(irc.IRCClient):
     
     nickname = "ekan0ra"
 
+    def  __init__(self, channel):
+        self.chn = '#'+channel
+        self.channel_admin = ['kushal', 'sayan']
+
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
         self.islogging = False
+        self._namescallback = {}
 
     def startlogging(self, user, msg):
         self.filename = "Logs-%s"%now.strftime("%Y-%m-%d-%H-%M")
@@ -71,6 +77,13 @@ class LogBot(irc.IRCClient):
         """Called when bot has succesfully signed on to server."""
         self.join(self.factory.channel)
 
+    def pingall(self, nicklist):
+        """Called to ping all with a message"""
+        for nick in nicklist:
+            if nick != self.nickname and nick not in self.channel_admin:
+                msg = '%s:%s'%(nick,self.pingmsg)
+                self.msg(self.chn,msg)
+
     def privmsg(self, user, channel, msg):
         """This will get called when the bot receives a message."""
         user = user.split('!', 1)[0]
@@ -79,13 +92,18 @@ class LogBot(irc.IRCClient):
             self.logger.log("<%s> %s" % (user, msg))
 
         # Check to see if they're sending me a private message
+        user_cond = user in self.channel_admin
         if channel == self.nickname:
-            user_cond = user == 'kushal' or user == 'sayan'
+        
             if msg.lower().endswith('startclass') and user_cond:
                 self.startlogging(user, msg)
     
             if msg.lower().endswith('endclass') and user_cond:
                 self.stoplogging(channel)
+
+        if msg.lower().startswith('pingall:') and user_cond:
+            self.pingmsg = msg.lower().lstrip('pingall:')
+            self.names(channel).addCallback(self.pingall)
 
     def action(self, user, channel, msg):
         """This will get called when the bot sees someone do an action."""
@@ -112,7 +130,37 @@ class LogBot(irc.IRCClient):
         """
         return nickname + '^'
 
+    def names(self, channel):
+        channel = channel.lower()
+        d = defer.Deferred()
+        if channel not in self._namescallback:
+            self._namescallback[channel] = ([], [])
 
+        self._namescallback[channel][0].append(d)
+        self.sendLine("NAMES %s" % channel)
+        return d
+
+    def irc_RPL_NAMREPLY(self, prefix, params):
+        channel = params[2].lower()
+        nicklist = params[3].split(' ')
+
+        if channel not in self._namescallback:
+            return
+
+        n = self._namescallback[channel][1]
+        n += nicklist
+
+    def irc_RPL_ENDOFNAMES(self, prefix, params):
+        channel = params[1].lower()
+        if channel not in self._namescallback:
+            return
+
+        callbacks, namelist = self._namescallback[channel]
+
+        for cb in callbacks:
+            cb.callback(namelist)
+
+        del self._namescallback[channel]
 
 class LogBotFactory(protocol.ClientFactory):
     """A factory for LogBots.
@@ -124,7 +172,7 @@ class LogBotFactory(protocol.ClientFactory):
         self.channel = channel
 
     def buildProtocol(self, addr):
-        p = LogBot()
+        p = LogBot(self.channel)
         p.factory = self
         return p
 
