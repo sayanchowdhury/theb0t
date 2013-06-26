@@ -79,10 +79,9 @@ class LogBot(irc.IRCClient):
 
     def pingall(self, nicklist):
         """Called to ping all with a message"""
-        for nick in nicklist:
-            if nick != self.nickname and nick not in self.channel_admin:
-                msg = '%s:%s'%(nick,self.pingmsg)
-                self.msg(self.chn,msg)
+        msg = ', '.join([nick for nick in nicklist if nick != self.nickname and nick not in self.channel_admin])
+        self.msg(self.chn, msg)
+        self.msg(self.chn, self.pingmsg.lstrip())
 
     def privmsg(self, user, channel, msg):
         """This will get called when the bot receives a message."""
