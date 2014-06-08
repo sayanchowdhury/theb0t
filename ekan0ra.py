@@ -36,7 +36,9 @@ class LogBot(irc.IRCClient):
 
     def  __init__(self, channel):
         self.chn = '#'+channel
-        self.channel_admin = ['kushal', 'sayan']
+        self.channel_admin = ['kushal', 'sayan', 'mbuf', 'rtnpro','chandankumar','praveenkumar']
+        self.qs_queue = []
+        self.logger = None
 
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
@@ -54,10 +56,12 @@ class LogBot(irc.IRCClient):
         self.islogging = True
 
     def stoplogging(self, channel):
+        if not self.logger:
+            return
         self.logger.log("[## Class Ended at %s ##]" % 
                         time.asctime(time.localtime(time.time())))
         self.logger.close()
-        self.upload_logs(channel)
+        #self.upload_logs(channel)
         self.islogging = False
 
     def connectionLost(self, reason):
@@ -92,6 +96,18 @@ class LogBot(irc.IRCClient):
 
         # Check to see if they're sending me a private message
         user_cond = user in self.channel_admin
+        if msg == '!':
+            self.qs_queue.append(user)
+        if msg == 'next' and user_cond:
+            if len(self.qs_queue) > 0:
+                name = self.qs_queue.pop(0)
+                msg = "%s please ask your question." % name
+                if len(self.qs_queue) > 0:
+                    msg = "%s. %s you are next. Get ready with your question." % (msg, self.qs_queue[0])
+                self.msg(self.chn, msg)
+            else:
+                self.msg(self.chn, "No one is in queue.")
+
         if channel == self.nickname:
         
             if msg.lower().endswith('startclass') and user_cond:
