@@ -32,13 +32,16 @@ class MessageLogger:
 class LogBot(irc.IRCClient):
     """A logging IRC bot."""
     
-    nickname = "ekan0ra"
+    nickname = "batul"
 
     def  __init__(self, channel):
         self.chn = '#'+channel
         self.channel_admin = ['kushal', 'sayan', 'mbuf', 'rtnpro','chandankumar','praveenkumar']
         self.qs_queue = []
         self.logger = None
+
+    def clearqueue(self):
+        self.qs_queue = []
 
     def connectionMade(self):
         irc.IRCClient.connectionMade(self)
@@ -98,6 +101,8 @@ class LogBot(irc.IRCClient):
         user_cond = user in self.channel_admin
         if msg == '!':
             self.qs_queue.append(user)
+        if msg == 'clearqueue' and user_cond:
+            self.clearqueue()
         if msg == 'next' and user_cond:
             if len(self.qs_queue) > 0:
                 name = self.qs_queue.pop(0)
@@ -107,6 +112,22 @@ class LogBot(irc.IRCClient):
                 self.msg(self.chn, msg)
             else:
                 self.msg(self.chn, "No one is in queue.")
+        if msg == 'masters':
+            self.msg(self.chn, "My current masters are: %s" % ",".join(self.channel_admin))
+        if msg.startswith('add:') and user_cond:
+            try:
+                name = msg.split()[1]
+                print name
+                self.channel_admin.append(name)
+                self.msg(self.chn,'%s is a master now.' % name)
+            except Exception, err:
+                print err
+        if msg.startswith('rm:') and user_cond:
+            try:
+                name = msg.split()[1]
+                self.channel_admin = filter(lambda x: x != name, self.channel_admin)
+            except Exception, err:
+                print err
 
         if channel == self.nickname:
         
