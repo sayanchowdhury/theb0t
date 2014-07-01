@@ -7,11 +7,11 @@ from twisted.internet import defer
 # system imports
 import time, sys, os
 import datetime
-import random
+import config as conf
 
 now = datetime.datetime.now()
 
-class MessageLogger:
+class MessageLogger(object):
     """
     An independent logger class (because separation of application
     and protocol logic is a good thing).
@@ -32,11 +32,11 @@ class MessageLogger:
 class LogBot(irc.IRCClient):
     """A logging IRC bot."""
     
-    nickname = "batul"
+    nickname = conf.botnick
 
     def  __init__(self, channel):
         self.chn = '#'+channel
-        self.channel_admin = ['kushal', 'sayan', 'mbuf', 'rtnpro','chandankumar','praveenkumar']
+        self.channel_admin = conf.channel_admin
         self.qs_queue = []
         self.logger = None
 
@@ -69,16 +69,7 @@ class LogBot(irc.IRCClient):
 
     def connectionLost(self, reason):
         irc.IRCClient.connectionLost(self, reason)
-        self.logger.log("[disconnected at %s]" % 
-                        time.asctime(time.localtime(time.time())))
-        self.logger.close()
-
-    def upload_logs(self, channel):
-        cmd = 'scp ./%s sayanchowdhury@dgplug.org:/home/sayanchowdhury/sayanchowdhury.dgplug.org/irclogs/' %self.filename
-        os.system(cmd)
-        #msg = 'The logs are updated to: http://sayanchowdhury.dgplug.org/irclogs/%s'%self.filename
-        #self.say(channel, msg)
-    # callbacks for events
+        self.islogging = False
 
     def signedOn(self):
         """Called when bot has succesfully signed on to server."""
