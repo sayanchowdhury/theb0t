@@ -90,10 +90,14 @@ class LogBot(irc.IRCClient):
 
         # Check to see if they're sending me a private message
         user_cond = user in self.channel_admin
-        if msg == '!':
+        if msg == '!'  and self.islogging:
             self.qs_queue.append(user)
+        if msg == '!' and not self.islogging:
+            self.msg(self.chn, '%s no session is going on, feel free to ask a question. You do not have to type !' % user)
+            return
         if msg == 'clearqueue' and user_cond:
             self.clearqueue()
+            self.msg(self.chn, "Queue is cleared.")
         if msg == 'next' and user_cond:
             if len(self.qs_queue) > 0:
                 name = self.qs_queue.pop(0)
@@ -103,7 +107,7 @@ class LogBot(irc.IRCClient):
                 self.msg(self.chn, msg)
             else:
                 self.msg(self.chn, "No one is in queue.")
-        if msg == 'masters':
+        if msg == 'masters' and user_cond:
             self.msg(self.chn, "My current masters are: %s" % ",".join(self.channel_admin))
         if msg.startswith('add:') and user_cond:
             try:
