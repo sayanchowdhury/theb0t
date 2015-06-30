@@ -9,6 +9,8 @@ import time, sys, os
 import datetime
 import config as conf
 
+import fpaste
+
 now = datetime.datetime.now()
 
 class MessageLogger(object):
@@ -31,7 +33,7 @@ class MessageLogger(object):
 
 class LogBot(irc.IRCClient):
     """A logging IRC bot."""
-    
+
     nickname = conf.botnick
 
     def  __init__(self, channel):
@@ -61,7 +63,7 @@ class LogBot(irc.IRCClient):
     def stoplogging(self, channel):
         if not self.logger:
             return
-        self.logger.log("[## Class Ended at %s ##]" % 
+        self.logger.log("[## Class Ended at %s ##]" %
                         time.asctime(time.localtime(time.time())))
         self.logger.close()
         #self.upload_logs(channel)
@@ -95,6 +97,14 @@ class LogBot(irc.IRCClient):
         if msg == '!' and not self.islogging:
             self.msg(self.chn, '%s no session is going on, feel free to ask a question. You do not have to type !' % user)
             return
+        if msg == 'givemelogs':
+            import sys
+            sys.argv = ['fpaste', self.filename]
+            try:
+                short_url, url = fpaste.main()
+                self.msg(user, url)
+            except:
+                self.msg(user, '500: I have a crash on you')
         if msg == 'clearqueue' and user_cond:
             self.clearqueue()
             self.msg(self.chn, "Queue is cleared.")
@@ -125,10 +135,10 @@ class LogBot(irc.IRCClient):
                 print err
 
         if channel == self.nickname:
-        
+
             if msg.lower().endswith('startclass') and user_cond:
                 self.startlogging(user, msg)
-    
+
             if msg.lower().endswith('endclass') and user_cond:
                 self.stoplogging(channel)
 
@@ -219,7 +229,7 @@ class LogBotFactory(protocol.ClientFactory):
 if __name__ == '__main__':
     # initialize logging
     log.startLogging(sys.stdout)
-    
+
     # create factory protocol and application
     f = LogBotFactory(sys.argv[1])
 
