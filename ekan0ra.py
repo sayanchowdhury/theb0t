@@ -13,6 +13,24 @@ import fpaste
 
 now = datetime.datetime.now()
 
+commands = [
+    ('!', 'Queue yourself to ask a question during a session'),
+    ('givemelogs', 'Give you a fpaste link with the latest log'),
+    ('clearqueue', 'Clear the ask question queue'),
+    ('next', 'ping the person in the queue to ask question'),
+    ('masters', 'returns the list of all the masters'),
+    ('add:[nick]', 'adds the nick to masters list'),
+    ('rm:[nick]', 'removes the nick to masters list'),
+    ('startclass', 'start logging the class'),
+    ('endclass', 'ends logging the class'),
+    ('pingall:[message]', 'pings the message to all'),
+    ('help', 'list all the commands'),
+]
+
+help_template = """
+{command} - {help_text}
+"""
+
 class MessageLogger(object):
     """
     An independent logger class (because separation of application
@@ -133,6 +151,11 @@ class LogBot(irc.IRCClient):
                 self.channel_admin = filter(lambda x: x != name, self.channel_admin)
             except Exception, err:
                 print err
+
+        if msg == 'help':
+            for command, help_txt in commands:
+                self.msg(user, help_template.format(command=command,
+                                                    help_text=help_txt))
 
         if channel == self.nickname:
 
