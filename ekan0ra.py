@@ -162,10 +162,10 @@ class LogBot(irc.IRCClient):
             if msg.lower().endswith('startclass') and user_cond:
                 self.startlogging(user, msg)
                 self.msg(user, 'Session logging started successfully')
-                self.msg(self.chn, '---------- SESSION STARTS ----------')
+                self.msg(self.chn, '----------SESSION STARTS----------')
 
             if msg.lower().endswith('endclass') and user_cond:
-                self.msg(self.chn, '---------- SESSION ENDS ----------')
+                self.msg(self.chn, '----------SESSION ENDS----------')
                 self.stoplogging(channel)
                 self.msg(user, 'Session logging terminated successfully')
 
