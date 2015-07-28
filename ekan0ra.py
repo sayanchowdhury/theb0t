@@ -11,8 +11,6 @@ import config as conf
 
 import fpaste
 
-now = datetime.datetime.now()
-
 commands = [
     ('!', 'Queue yourself to ask a question during a session'),
     ('givemelogs', 'Give you a fpaste link with the latest log'),
@@ -69,7 +67,8 @@ class LogBot(irc.IRCClient):
         self._namescallback = {}
 
     def startlogging(self, user, msg):
-        self.filename = "Logs-%s"%now.strftime("%Y-%m-%d-%H-%M")
+        now = datetime.datetime.now()
+        self.filename = "Logs-%s.txt"%now.strftime("%Y-%m-%d-%H-%M")
         self.logger = MessageLogger(open(self.filename, "a"))
 
         self.logger.log("[## Class Started at %s ##]" %
