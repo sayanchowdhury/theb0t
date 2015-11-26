@@ -224,12 +224,12 @@ class LogBot(irc.IRCClient):
     # Function to return requested links
     def links_for_key(self, msg):
         import json
-        keyword = msg.split( )
+        keyword = msg.split()
         link_file = open('links.json')
         links_data = json.load(link_file)
-        links_value = keyword[keyword.index('.links')+1]
-        if links_data.has_key(links_value):
-            self.msg(self.chn,"%s" % (links_data[links_value].encode('utf-8')))
+        links_value = keyword[keyword.index('.link')+1]
+        if links_data.get(links_value):
+            self.msg(self.chn,"%s" % (links_data.get(links_value).encode('utf-8')))
         else:
             print "Data not found"
 
