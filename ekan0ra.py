@@ -23,6 +23,7 @@ commands = [
     ('endclass', 'ends logging the class'),
     ('pingall:[message]', 'pings the message to all'),
     ('help', 'list all the commands'),
+    ('.link [portal]', 'Returns the link of the portal')
 ]
 
 help_template = """
@@ -172,6 +173,9 @@ class LogBot(irc.IRCClient):
             self.pingmsg = msg.lower().lstrip('pingall:')
             self.names(channel).addCallback(self.pingall)
 
+        if '.link' in msg:
+                self.links_for_key(msg)
+
     def action(self, user, channel, msg):
         """This will get called when the bot sees someone do an action."""
         user = user.split('!', 1)[0]
@@ -216,6 +220,18 @@ class LogBot(irc.IRCClient):
 
         n = self._namescallback[channel][1]
         n += nicklist
+
+    # Function to return requested links
+    def links_for_key(self, msg):
+        import json
+        keyword = msg.split( )
+        link_file = open('links.json')
+        links_data = json.load(link_file)
+        links_value = keyword[keyword.index('.links')+1]
+        if links_data.has_key(links_value):
+            self.msg(self.chn,"%s" % (links_data[links_value].encode('utf-8')))
+        else:
+            print "Data not found"
 
     def irc_RPL_ENDOFNAMES(self, prefix, params):
         channel = params[1].lower()
