@@ -181,7 +181,7 @@ class LogBot(irc.IRCClient):
             self.pingmsg = msg.lower().lstrip('pingall:')
             self.names(channel).addCallback(self.pingall)
 
-        if msg.startswith('.link'):
+        if msg.startswith('.link '):
             self.links_for_key(msg)
 
     def action(self, user, channel, msg):
@@ -239,7 +239,7 @@ class LogBot(irc.IRCClient):
             self.links_reload()
         else:
             self.msg(self.chn,
-                     self.links_data.get(links_value, "Keyword does not exists"))
+                     str(self.links_data.get(str(keyword), "Keyword does not exists")))
 
     def irc_RPL_ENDOFNAMES(self, prefix, params):
         channel = params[1].lower()
