@@ -57,6 +57,7 @@ class LogBot(irc.IRCClient):
         self.chn = '#'+channel
         self.channel_admin = conf.channel_admin
         self.qs_queue = []
+        self.links_reload()
         self.logger = None
 
     def clearqueue(self):
@@ -100,6 +101,13 @@ class LogBot(irc.IRCClient):
         msg = ', '.join([nick for nick in nicklist if nick != self.nickname and nick not in self.channel_admin])
         self.msg(self.chn, msg)
         self.msg(self.chn, self.pingmsg.lstrip())
+
+    # To reload json file
+    def links_reload(self):
+        import json
+        link_file = open('links.json')
+        self.links_data = json.load(link_file)
+        link_file.close()
 
     def privmsg(self, user, channel, msg):
         """This will get called when the bot receives a message."""
@@ -223,15 +231,24 @@ class LogBot(irc.IRCClient):
 
     # Function to return requested links
     def links_for_key(self, msg):
-        import json
         keyword = msg.split()
-        link_file = open('links.json')
-        links_data = json.load(link_file)
         links_value = keyword[keyword.index('.link')+1]
-        if links_data.get(links_value):
-            self.msg(self.chn,"%s" % (links_data.get(links_value).encode('utf-8')))
+        if links_value == 'reload':
+            self.links_reload()
+            self.msg(
+                self.chn,
+                "File reloaded , Available keys are: %s"
+                % ([key.encode('utf-8')
+                    for key, value in self.links_data.items()])
+            )
+
         else:
-            print "Data not found"
+            self.msg(
+                self.chn,
+                "%s"
+                % (self.links_data.get(links_value,
+                                       "Key doesn't exist").encode('utf-8'))
+                )
 
     def irc_RPL_ENDOFNAMES(self, prefix, params):
         channel = params[1].lower()
@@ -244,6 +261,7 @@ class LogBot(irc.IRCClient):
             cb.callback(namelist)
 
         del self._namescallback[channel]
+
 
 class LogBotFactory(protocol.ClientFactory):
     """A factory for LogBots.
