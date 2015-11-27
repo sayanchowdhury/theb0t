@@ -8,6 +8,7 @@ from twisted.internet import defer
 import time, sys, os
 import datetime
 import config as conf
+import json
 
 import fpaste
 
@@ -104,7 +105,6 @@ class LogBot(irc.IRCClient):
 
     # To reload json file
     def links_reload(self):
-        import json
         link_file = open('links.json')
         self.links_data = json.load(link_file)
         link_file.close()
@@ -181,8 +181,8 @@ class LogBot(irc.IRCClient):
             self.pingmsg = msg.lower().lstrip('pingall:')
             self.names(channel).addCallback(self.pingall)
 
-        if '.link' in msg:
-                self.links_for_key(msg)
+        if msg.startswith('.link'):
+            self.links_for_key(msg)
 
     def action(self, user, channel, msg):
         """This will get called when the bot sees someone do an action."""
@@ -231,24 +231,15 @@ class LogBot(irc.IRCClient):
 
     # Function to return requested links
     def links_for_key(self, msg):
-        keyword = msg.split()
-        links_value = keyword[keyword.index('.link')+1]
-        if links_value == 'reload':
-            self.links_reload()
-            self.msg(
-                self.chn,
-                "File reloaded , Available keys are: %s"
-                % ([key.encode('utf-8')
-                    for key, value in self.links_data.items()])
-            )
+        keyword = msg.split()[1]
+        if not keyword:
+            self.msg(self.chn, '.link need a keyword. Check help for details')
 
+        if keyword == 'reload':
+            self.links_reload()
         else:
-            self.msg(
-                self.chn,
-                "%s"
-                % (self.links_data.get(links_value,
-                                       "Key doesn't exist").encode('utf-8'))
-                )
+            self.msg(self.chn,
+                     self.links_data.get(links_value, "Keyword does not exists"))
 
     def irc_RPL_ENDOFNAMES(self, prefix, params):
         channel = params[1].lower()
