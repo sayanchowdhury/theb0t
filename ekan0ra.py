@@ -5,7 +5,9 @@ from twisted.python import log
 from twisted.internet import defer
 
 # system imports
-import time, sys, os
+import time
+import sys
+import os
 import datetime
 import config as conf
 import json
@@ -31,11 +33,13 @@ help_template = """
 {command} - {help_text}
 """
 
+
 class MessageLogger(object):
     """
     An independent logger class (because separation of application
     and protocol logic is a good thing).
     """
+
     def __init__(self, file):
         self.file = file
 
@@ -54,8 +58,8 @@ class LogBot(irc.IRCClient):
 
     nickname = conf.botnick
 
-    def  __init__(self, channel):
-        self.chn = '#'+channel
+    def __init__(self, channel):
+        self.chn = '#' + channel
         self.channel_admin = conf.channel_admin
         self.qs_queue = []
         self.links_reload()
@@ -71,11 +75,11 @@ class LogBot(irc.IRCClient):
 
     def startlogging(self, user, msg):
         now = datetime.datetime.now()
-        self.filename = "Logs-%s.txt"%now.strftime("%Y-%m-%d-%H-%M")
+        self.filename = "Logs-%s.txt" % now.strftime("%Y-%m-%d-%H-%M")
         self.logger = MessageLogger(open(self.filename, "a"))
 
         self.logger.log("[## Class Started at %s ##]" %
-                    time.asctime(time.localtime(time.time())))
+                        time.asctime(time.localtime(time.time())))
         user = user.split('!', 1)[0]
         self.logger.log("<%s> %s" % (user, msg))
         self.islogging = True
@@ -86,7 +90,7 @@ class LogBot(irc.IRCClient):
         self.logger.log("[## Class Ended at %s ##]" %
                         time.asctime(time.localtime(time.time())))
         self.logger.close()
-        #self.upload_logs(channel)
+        # self.upload_logs(channel)
         self.islogging = False
 
     def connectionLost(self, reason):
@@ -99,7 +103,8 @@ class LogBot(irc.IRCClient):
 
     def pingall(self, nicklist):
         """Called to ping all with a message"""
-        msg = ', '.join([nick for nick in nicklist if nick != self.nickname and nick not in self.channel_admin])
+        msg = ', '.join([nick for nick in nicklist if nick !=
+                         self.nickname and nick not in self.channel_admin])
         self.msg(self.chn, msg)
         self.msg(self.chn, self.pingmsg.lstrip())
 
@@ -118,10 +123,11 @@ class LogBot(irc.IRCClient):
 
         # Check to see if they're sending me a private message
         user_cond = user in self.channel_admin
-        if msg == '!'  and self.islogging:
+        if msg == '!' and self.islogging:
             self.qs_queue.append(user)
         if msg == '!' and not self.islogging:
-            self.msg(self.chn, '%s no session is going on, feel free to ask a question. You do not have to type !' % user)
+            self.msg(
+                self.chn, '%s no session is going on, feel free to ask a question. You do not have to type !' % user)
             return
         if msg == 'givemelogs':
             import sys
@@ -139,24 +145,27 @@ class LogBot(irc.IRCClient):
                 name = self.qs_queue.pop(0)
                 msg = "%s please ask your question." % name
                 if len(self.qs_queue) > 0:
-                    msg = "%s. %s you are next. Get ready with your question." % (msg, self.qs_queue[0])
+                    msg = "%s. %s you are next. Get ready with your question." % (
+                        msg, self.qs_queue[0])
                 self.msg(self.chn, msg)
             else:
                 self.msg(self.chn, "No one is in queue.")
         if msg == 'masters' and user_cond:
-            self.msg(self.chn, "My current masters are: %s" % ",".join(self.channel_admin))
+            self.msg(self.chn, "My current masters are: %s" %
+                     ",".join(self.channel_admin))
         if msg.startswith('add:') and user_cond:
             try:
                 name = msg.split()[1]
                 print name
                 self.channel_admin.append(name)
-                self.msg(self.chn,'%s is a master now.' % name)
+                self.msg(self.chn, '%s is a master now.' % name)
             except Exception, err:
                 print err
         if msg.startswith('rm:') and user_cond:
             try:
                 name = msg.split()[1]
-                self.channel_admin = filter(lambda x: x != name, self.channel_admin)
+                self.channel_admin = filter(
+                    lambda x: x != name, self.channel_admin)
             except Exception, err:
                 print err
 
@@ -198,7 +207,6 @@ class LogBot(irc.IRCClient):
         new_nick = params[0]
         if self.islogging:
             self.logger.log("%s is now known as %s" % (old_nick, new_nick))
-
 
     # For fun, override the method that determines how a nickname is changed on
     # collisions. The default method appends an underscore.
