@@ -1,0 +1,4 @@
+Twisted==15.5.0
+argparse==1.2.1
+wsgiref==0.1.2
+zope.interface==4.1.3

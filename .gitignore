@@ -1,2 +1,8 @@
+*~
+*pyc
+*orig
+*log
 Log*
-*.pyc
+nohup.out
+gitnore
+data

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-'''fpaste - a cli frontend for the fpaste.org pastebin'''
+"""fpaste - a cli frontend for the fpaste.org pastebin"""
 #
 # Copyright 2008, 2010 Fedora Unity Project (http://fedoraunity.org)
 # Author: Jason 'zcat' Farrell <farrellj@gmail.com>
