@@ -381,7 +381,7 @@ class LogBot(irc.IRCClient):
                         if self.qs_queue.has_next():
                             msg = '%s\n%s: You are next. Get ready with ' \
                                 'your question.' % (
-                                    msg, self.qs_queue.peek_next())
+                                    msg, self.qs_queue.peek())
                         self.say(self.channel, msg)
                         if self.config.SHOW_QUEUE_STATUS_ENABLED:
                             self.show_queue_status(channel)

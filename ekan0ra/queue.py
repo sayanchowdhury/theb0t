@@ -25,21 +25,22 @@ class Queue(list):
         """Add nick to queue."""
         self.append(nick)
 
-    def dequeue(self, nick):
+    def dequeue(self, nick, all=False):
         """
-        Remove first item matching `nick` in queue.
+        Remove every occurrence of `nick` from queue.
         """
-        try:
+        result=self.count(nick)>0
+        if all and result:
+            self = filter(lambda x: x != nick, self)
+        elif result:
             self.remove(nick)
-            return True
-        except ValueError:
-            return False
+        return result
 
     def has_next(self):
         """Check if queue has at least one item."""
         return len(self) > 0
 
-    def peek_next(self):
+    def peek(self):
         """
         Get a look at the next item to be popped from the queue,
         but don't remove it from queue.
